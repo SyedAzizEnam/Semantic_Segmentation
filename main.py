@@ -4,7 +4,7 @@ import helper
 import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
-
+from tf.contrib.layers import xavier_initializer
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
@@ -56,29 +56,29 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
 
-    fcn_layer_1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,
+    fcn_layer_1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, kernel_initializer=xavier_initializer(),
                                    padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-    fcn_layer_2 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1,
+    fcn_layer_2 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, kernel_initializer=xavier_initializer(),
                                    padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-    fcn_layer_3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1,
+    fcn_layer_3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, kernel_initializer=xavier_initializer(),
                                    padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     decoder_layer_1 = tf.layers.conv2d_transpose(fcn_layer_1, num_classes, 4, strides=(2,2),
-                                                   padding='same',
+                                                   padding='same', kernel_initializer=xavier_initializer(),
                                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     skip_con_1 = tf.add(decoder_layer_1, fcn_layer_2)
 
 
     decoder_layer_2 = tf.layers.conv2d_transpose(skip_con_1, num_classes, 4, strides=(2,2),
-                                                   padding='same',
+                                                   padding='same', kernel_initializer=xavier_initializer(),
                                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     skip_con_2 = tf.add(decoder_layer_2, fcn_layer_3)
 
 
     decoder_layer_3 = tf.layers.conv2d_transpose(skip_con_2, num_classes, 16, strides=(8,8),
-                                                   padding='same',
+                                                   padding='same', kernel_initializer=xavier_initializer(),
                                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     return decoder_layer_3
