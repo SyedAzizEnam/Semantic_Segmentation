@@ -5,6 +5,9 @@ import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
 from tensorflow.contrib.layers import xavier_initializer
+import scipy.misc
+import shutil
+import time
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
@@ -106,7 +109,7 @@ tests.test_optimize(optimize)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-             correct_label, keep_prob, learning_rate):
+             correct_label, keep_prob, learning_rate, logits, image_shape):
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
@@ -122,10 +125,22 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     """
     init_op = tf.global_variables_initializer()
     sess.run(init_op)
+    i=0
 
     for epoch in range(epochs):
 
-        i = 0
+        if epoch%10 == 0:
+            output_dir = os.path.join('./runs', 'epoch '+str(epoch)+'_'+str(time.time()))
+            if os.path.exists(output_dir):
+                shutil.rmtree(output_dir)
+            os.makedirs(output_dir)
+        
+            # Run NN on test images and save them to HD
+            print('Epoch Finished. Saving test images to: {}'.format(output_dir))
+            image_outputs = helper.gen_test_output(sess, logits, keep_prob, input_image, os.path.join('./data', 'data_road/testing'), image_shape)
+            for name, image in image_outputs:
+                scipy.misc.imsave(os.path.join(output_dir, name), image)
+
         for image, label in get_batches_fn(batch_size):
 
             feed_dict = {input_image: image,
@@ -134,11 +149,15 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
             loss, _ = sess.run([cross_entropy_loss, train_op], feed_dict=feed_dict)
 
-            i += 1
-            if i % 100 == 0:
+            if i % 5 == 0:
                 print("EPOCH {} - ITER {} - LOSS {}".format(epoch+1, i, loss))
-
-tests.test_train_nn(train_nn)
+            i+=1
+            
+    saver = tf.train.Saver()
+    model_path = './runs/model/'
+    save_path = saver.save(sess, model_path)
+    print("Model saved to {}".format(model_path))
+#tests.test_train_nn(train_nn)
 
 
 def run():
@@ -147,7 +166,7 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
-    epochs = 10
+    epochs = 100
     batch_size = 8
 
     # Download pretrained vgg model
@@ -175,7 +194,7 @@ def run():
 
 
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-                 correct_label, keep_prob, learning_rate)
+                 correct_label, keep_prob, learning_rate, logits, image_shape)
 
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
         # OPTIONAL: Apply the trained model to a video
