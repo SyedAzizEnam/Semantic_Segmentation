@@ -8,7 +8,7 @@ A fully convolutional network is a variant of traditional convolutional networks
 
 ![alt text](https://github.com/SyedAzizEnam/Semantic_Segmentation/blob/master/fcn.png)
 
-The models layers and the training procedure is speficifed in main.py. The model was trained for 100 epochs with a batch size of 8.
+The models layers and the training procedure is specified in main.py. The model was trained for 100 epochs with a batch size of 8.
 
 ### Results
 
