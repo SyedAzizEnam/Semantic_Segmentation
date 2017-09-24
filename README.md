@@ -4,7 +4,7 @@
 This repo is collection of scripts used to create a Fully Convolutional Network (FCN). The FCN is used to identify pixels in an image which correspond to street roads.
 
 ### Fully Convolutional Network
-A fully convolutional network is a variant of traditional convolutional networks where the fully connected layers are replaces with fully convolutional layers. Below is an illustration of the end to end model:
+A fully convolutional network is a variant of traditional convolutional networks where the fully connected layers are replaced with fully convolutional layers. Below is an illustration of the end to end model:
 
 ![alt text](https://github.com/SyedAzizEnam/Semantic_Segmentation/blob/master/fcn.png)
 
